@@ -754,11 +754,12 @@ var Price = /*#__PURE__*/function (_Fraction) {
 
 var PAIR_ADDRESS_CACHE = {};
 var Pair = /*#__PURE__*/function () {
-  function Pair(tokenAmountA, tokenAmountB) {
+  function Pair(tokenAmountA, tokenAmountB, pairAddress) {
     var tokenAmounts = tokenAmountA.token.sortsBefore(tokenAmountB.token) // does safety checks
     ? [tokenAmountA, tokenAmountB] : [tokenAmountB, tokenAmountA];
     this.liquidityToken = new Token(tokenAmounts[0].token.chainId, Pair.getAddress(tokenAmounts[0].token, tokenAmounts[1].token), 18, 'ALPT', 'AiSwap Liquidity Provider Token');
     this.tokenAmounts = tokenAmounts;
+    this.pairAddress = pairAddress;
   }
 
   Pair.getAddress = function getAddress(tokenA, tokenB) {
@@ -808,7 +809,7 @@ var Pair = /*#__PURE__*/function () {
     return token.equals(this.token0) ? this.reserve0 : this.reserve1;
   };
 
-  _proto.getOutputAmount = function getOutputAmount(inputAmount) {
+  _proto.getOutputAmount = function getOutputAmount(inputAmount, pairAddress) {
     !this.involvesToken(inputAmount.token) ?  invariant(false, 'TOKEN')  : void 0;
 
     if (JSBI.equal(this.reserve0.raw, ZERO) || JSBI.equal(this.reserve1.raw, ZERO)) {
@@ -826,10 +827,10 @@ var Pair = /*#__PURE__*/function () {
       throw new InsufficientInputAmountError();
     }
 
-    return [outputAmount, new Pair(inputReserve.add(inputAmount), outputReserve.subtract(outputAmount))];
+    return [outputAmount, new Pair(inputReserve.add(inputAmount), outputReserve.subtract(outputAmount), pairAddress)];
   };
 
-  _proto.getInputAmount = function getInputAmount(outputAmount) {
+  _proto.getInputAmount = function getInputAmount(outputAmount, pairAddress) {
     !this.involvesToken(outputAmount.token) ?  invariant(false, 'TOKEN')  : void 0;
 
     if (JSBI.equal(this.reserve0.raw, ZERO) || JSBI.equal(this.reserve1.raw, ZERO) || JSBI.greaterThanOrEqual(outputAmount.raw, this.reserveOf(outputAmount.token).raw)) {
@@ -841,7 +842,7 @@ var Pair = /*#__PURE__*/function () {
     var numerator = JSBI.multiply(JSBI.multiply(inputReserve.raw, outputAmount.raw), _1000);
     var denominator = JSBI.multiply(JSBI.subtract(outputReserve.raw, outputAmount.raw), _997);
     var inputAmount = new TokenAmount(outputAmount.token.equals(this.token0) ? this.token1 : this.token0, JSBI.add(JSBI.divide(numerator, denominator), ONE));
-    return [inputAmount, new Pair(inputReserve.add(inputAmount), outputReserve.subtract(outputAmount))];
+    return [inputAmount, new Pair(inputReserve.add(inputAmount), outputReserve.subtract(outputAmount), pairAddress)];
   };
 
   _proto.getLiquidityMinted = function getLiquidityMinted(totalSupply, tokenAmountA, tokenAmountB) {

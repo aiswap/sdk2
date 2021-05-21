@@ -25,6 +25,7 @@ let PAIR_ADDRESS_CACHE: { [token0Address: string]: { [token1Address: string]: st
 
 export class Pair {
   public readonly liquidityToken: Token
+  public readonly pairAddress: string
   private readonly tokenAmounts: [TokenAmount, TokenAmount]
 
   public static getAddress(tokenA: Token, tokenB: Token): string {
@@ -47,7 +48,7 @@ export class Pair {
     return PAIR_ADDRESS_CACHE[tokens[0].address][tokens[1].address]
   }
 
-  public constructor(tokenAmountA: TokenAmount, tokenAmountB: TokenAmount) {
+  public constructor(tokenAmountA: TokenAmount, tokenAmountB: TokenAmount, pairAddress: string) {
     const tokenAmounts = tokenAmountA.token.sortsBefore(tokenAmountB.token) // does safety checks
       ? [tokenAmountA, tokenAmountB]
       : [tokenAmountB, tokenAmountA]
@@ -55,10 +56,11 @@ export class Pair {
       tokenAmounts[0].token.chainId,
       Pair.getAddress(tokenAmounts[0].token, tokenAmounts[1].token),
       18,
-      'UNI-V2',
-      'Uniswap V2'
+      'ALPT',
+      'AiSwap Liquidity Provider Token'
     )
     this.tokenAmounts = tokenAmounts as [TokenAmount, TokenAmount]
+    this.pairAddress = pairAddress
   }
 
   /**
@@ -120,7 +122,7 @@ export class Pair {
     return token.equals(this.token0) ? this.reserve0 : this.reserve1
   }
 
-  public getOutputAmount(inputAmount: TokenAmount): [TokenAmount, Pair] {
+  public getOutputAmount(inputAmount: TokenAmount, pairAddress: string): [TokenAmount, Pair] {
     invariant(this.involvesToken(inputAmount.token), 'TOKEN')
     if (JSBI.equal(this.reserve0.raw, ZERO) || JSBI.equal(this.reserve1.raw, ZERO)) {
       throw new InsufficientReservesError()
@@ -137,10 +139,10 @@ export class Pair {
     if (JSBI.equal(outputAmount.raw, ZERO)) {
       throw new InsufficientInputAmountError()
     }
-    return [outputAmount, new Pair(inputReserve.add(inputAmount), outputReserve.subtract(outputAmount))]
+    return [outputAmount, new Pair(inputReserve.add(inputAmount), outputReserve.subtract(outputAmount), pairAddress)]
   }
 
-  public getInputAmount(outputAmount: TokenAmount): [TokenAmount, Pair] {
+  public getInputAmount(outputAmount: TokenAmount, pairAddress: string): [TokenAmount, Pair] {
     invariant(this.involvesToken(outputAmount.token), 'TOKEN')
     if (
       JSBI.equal(this.reserve0.raw, ZERO) ||
@@ -158,7 +160,7 @@ export class Pair {
       outputAmount.token.equals(this.token0) ? this.token1 : this.token0,
       JSBI.add(JSBI.divide(numerator, denominator), ONE)
     )
-    return [inputAmount, new Pair(inputReserve.add(inputAmount), outputReserve.subtract(outputAmount))]
+    return [inputAmount, new Pair(inputReserve.add(inputAmount), outputReserve.subtract(outputAmount), pairAddress)]
   }
 
   public getLiquidityMinted(
