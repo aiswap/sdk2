@@ -159,7 +159,7 @@ export class Trade {
       amounts[0] = wrappedAmount(amount, route.chainId)
       for (let i = 0; i < route.path.length - 1; i++) {
         const pair = route.pairs[i]
-        const [outputAmount, nextPair] = pair.getOutputAmount(amounts[i])
+        const [outputAmount, nextPair] = pair.getOutputAmount(amounts[i], pair.pairAddress)
         amounts[i + 1] = outputAmount
         nextPairs[i] = nextPair
       }
@@ -168,7 +168,7 @@ export class Trade {
       amounts[amounts.length - 1] = wrappedAmount(amount, route.chainId)
       for (let i = route.path.length - 1; i > 0; i--) {
         const pair = route.pairs[i - 1]
-        const [inputAmount, nextPair] = pair.getInputAmount(amounts[i])
+        const [inputAmount, nextPair] = pair.getInputAmount(amounts[i], pair.pairAddress)
         amounts[i - 1] = inputAmount
         nextPairs[i - 1] = nextPair
       }
@@ -278,7 +278,7 @@ export class Trade {
 
       let amountOut: TokenAmount
       try {
-        ;[amountOut] = pair.getOutputAmount(amountIn)
+        ;[amountOut] = pair.getOutputAmount(amountIn, pair.pairAddress)
       } catch (error) {
         // input too low
         if (error.isInsufficientInputAmountError) {
@@ -366,7 +366,7 @@ export class Trade {
 
       let amountIn: TokenAmount
       try {
-        ;[amountIn] = pair.getInputAmount(amountOut)
+        ;[amountIn] = pair.getInputAmount(amountOut, pair.pairAddress)
       } catch (error) {
         // not enough liquidity in this pair
         if (error.isInsufficientReservesError) {

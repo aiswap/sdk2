@@ -1111,7 +1111,7 @@ var Trade = /*#__PURE__*/function () {
       for (var i = 0; i < route.path.length - 1; i++) {
         var pair = route.pairs[i];
 
-        var _pair$getOutputAmount = pair.getOutputAmount(amounts[i]),
+        var _pair$getOutputAmount = pair.getOutputAmount(amounts[i], pair.pairAddress),
             outputAmount = _pair$getOutputAmount[0],
             nextPair = _pair$getOutputAmount[1];
 
@@ -1125,7 +1125,7 @@ var Trade = /*#__PURE__*/function () {
       for (var _i = route.path.length - 1; _i > 0; _i--) {
         var _pair = route.pairs[_i - 1];
 
-        var _pair$getInputAmount = _pair.getInputAmount(amounts[_i]),
+        var _pair$getInputAmount = _pair.getInputAmount(amounts[_i], _pair.pairAddress),
             inputAmount = _pair$getInputAmount[0],
             _nextPair = _pair$getInputAmount[1];
 
@@ -1250,7 +1250,7 @@ var Trade = /*#__PURE__*/function () {
       try {
         ;
 
-        var _pair$getOutputAmount2 = pair.getOutputAmount(amountIn);
+        var _pair$getOutputAmount2 = pair.getOutputAmount(amountIn, pair.pairAddress);
 
         amountOut = _pair$getOutputAmount2[0];
       } catch (error) {
@@ -1332,7 +1332,7 @@ var Trade = /*#__PURE__*/function () {
       try {
         ;
 
-        var _pair$getInputAmount2 = pair.getInputAmount(amountOut);
+        var _pair$getInputAmount2 = pair.getInputAmount(amountOut, pair.pairAddress);
 
         amountIn = _pair$getInputAmount2[0];
       } catch (error) {
